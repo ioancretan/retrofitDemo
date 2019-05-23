@@ -16,8 +16,6 @@ import android.widget.Toast;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,18 +24,22 @@ public class MainActivity extends AppCompatActivity {
     private EditText cityNameEditText;
     private Button showWeatherButton;
     private Button requestPermissionsButton;
-    private WeatherService gitHubService;
+    private RetrofitClient retrofit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        weatherResponseText = (TextView) findViewById(R.id.weather_response_text);
-        cityNameEditText = (EditText) findViewById(R.id.city_name_edit_text);
-        showWeatherButton = (Button) findViewById(R.id.show_weather_button);
-        requestPermissionsButton = (Button) findViewById(R.id.request_permissions_button);
-        buildRetrofit();
+        initUi();
+        retrofit = RetrofitClient.getInstance();
         setListeners();
+    }
+
+    private void initUi() {
+        weatherResponseText = (TextView) findViewById(R.id.txt_weather_response);
+        cityNameEditText = (EditText) findViewById(R.id.txt_city_name_edit);
+        showWeatherButton = (Button) findViewById(R.id.button_show_weather);
+        requestPermissionsButton = (Button) findViewById(R.id.button_request_permissions);
     }
 
     private void setListeners() {
@@ -51,22 +53,13 @@ public class MainActivity extends AppCompatActivity {
         requestPermissionsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                requestReadContactPermisions();
+                requestReadContactPermissions();
             }
         });
     }
 
-    public void buildRetrofit() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(ApiConstans.BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        gitHubService = retrofit.create(WeatherService.class);
-    }
-
     private void loadWeather() {
-        Call<WeatherResponse> call = gitHubService.getWeatherByCityName(ApiConstans.APP_KEY, cityNameEditText.getText().toString());
+        Call<WeatherResponse> call = retrofit.getWeatherService().getWeatherByCityName(ApiConstans.APP_KEY, cityNameEditText.getText().toString());
 
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
@@ -81,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void requestReadContactPermisions() {
+    private void requestReadContactPermissions() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
                 ContextCompat.checkSelfPermission(this,
@@ -93,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                     MY_PERMISSIONS_REQUEST_READ_CONTACTS);
 
         } else {
-            Toast.makeText(this, "Persmision already axist", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Persmision already exist", Toast.LENGTH_SHORT).show();
         }
     }
 
